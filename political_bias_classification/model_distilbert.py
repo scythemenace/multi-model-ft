@@ -8,33 +8,38 @@ from transformers import (
 )
 import evaluate
 import numpy as np
-from sklearn.model_selection import train_test_split
 
 # Step 1: Load the CSV files
 train_df = pd.read_csv("input_data/training.csv")
-validation_df = pd.read_csv("input_data/validation.csv", header=None, names=["text"])
-test_df = pd.read_csv("input_data/tweets_test.csv", header=None, names=["text"])
+validation_df = pd.read_csv("input_data/validation.csv")
+# Load test data with header=0 to treat the first row as a header, and select only the "tweet" column
+test_df = pd.read_csv("input_data/tweets_test.csv", header=0, usecols=["tweet"])
 
-# Step 2: Split training data into train and validation sets (since validation.csv has no labels)
-train_df = train_df.rename(columns={"tweet": "text", "label": "labels"})  # Rename columns to match expected format
-train_split, val_split = train_test_split(train_df, test_size=0.2, stratify=train_df["labels"], random_state=42)
+# Debug: Check the number of rows in each dataset
+print(f"Number of rows in train_df: {len(train_df)}")
+print(f"Number of rows in validation_df: {len(validation_df)}")
+print(f"Number of rows in test_df: {len(test_df)}")
+
+# Step 2: Prepare the data by renaming columns for consistency
+train_df = train_df.rename(columns={"tweet": "text", "label": "labels"})
+validation_df = validation_df.rename(columns={"tweet": "text", "label": "labels"})
+test_df = test_df.rename(columns={"tweet": "text"})
 
 # Step 3: Determine the number of unique labels
-unique_labels = set(train_df["labels"])
+unique_labels = set(train_df["labels"]).union(set(validation_df["labels"]))
 num_labels = len(unique_labels)  # Should be 5 (labels 1 to 5)
 
 # Map labels to [0, num_labels - 1] (1 to 5 → 0 to 4)
 label_map = {old_label: new_label for new_label, old_label in enumerate(sorted(unique_labels))}
-train_split["labels"] = train_split["labels"].map(label_map)
-val_split["labels"] = val_split["labels"].map(label_map)
+train_df["labels"] = train_df["labels"].map(label_map)
+validation_df["labels"] = validation_df["labels"].map(label_map)
 
-# Add placeholder labels for validation and test sets (not used for training/evaluation)
-validation_df["labels"] = 0
+# Add placeholder labels for test set (not used for training/evaluation)
 test_df["labels"] = 0
 
 # Convert pandas DataFrames to Hugging Face Datasets
-train_dataset = Dataset.from_pandas(train_split[["text", "labels"]])
-validation_dataset = Dataset.from_pandas(val_split[["text", "labels"]])  # Use split validation for evaluation
+train_dataset = Dataset.from_pandas(train_df[["text", "labels"]])
+validation_dataset = Dataset.from_pandas(validation_df[["text", "labels"]])
 test_dataset = Dataset.from_pandas(test_df[["text", "labels"]])
 
 # Create a DatasetDict
@@ -120,14 +125,17 @@ trainer = Trainer(
 # Step 12: Start training
 trainer.train()
 
-# Step 13: Evaluate on the split validation set
+# Step 13: Evaluate on the validation set
 eval_results = trainer.evaluate()
-print(f"Validation Accuracy (on split validation set): {eval_results['eval_accuracy']:.4f}")
+print(f"Validation Accuracy: {eval_results['eval_accuracy']:.4f}")
 
 # Step 14: Generate predictions on test data
 test_predictions = trainer.predict(tokenized_test)
 test_logits = test_predictions.predictions
 test_pred_labels = np.argmax(test_logits, axis=-1)
+
+# Verify the number of predictions
+print(f"Number of test predictions: {len(test_pred_labels)}")
 
 # Step 15: Create inverse label map to convert model labels (0-4) back to original labels (1-5)
 inverse_label_map = {new_label: old_label for old_label, new_label in label_map.items()}
