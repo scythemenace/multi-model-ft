@@ -92,12 +92,11 @@ training_args = TrainingArguments(
     output_dir="news_article_classifier",
     eval_strategy="epoch",
     save_strategy="epoch",
-    learning_rate=4e-5, # tweaked
+    learning_rate=3e-5, # tweaked
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
     num_train_epochs=5, # tweaked
-    weight_decay=0.1,   # tweaked
-    load_best_model_at_end=True,
+    weight_decay=0.01,   # tweaked
     metric_for_best_model="accuracy",
 )
 
