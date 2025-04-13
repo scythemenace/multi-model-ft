@@ -96,7 +96,7 @@ training_args = TrainingArguments(
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
     num_train_epochs=5, # tweaked
-    weight_decay=0.01,   # tweaked
+    weight_decay=0.1,   # tweaked
     metric_for_best_model="accuracy",
 )
 
@@ -121,12 +121,18 @@ trainer = Trainer(
 # Start training
 trainer.train()
 
-# Optional: Generate predictions on test data (no labels, so no evaluation)
+# Generate predictions on test data
 test_predictions = trainer.predict(tokenized_test)
 test_logits = test_predictions.predictions
 test_pred_labels = np.argmax(test_logits, axis=-1)
 
+# Create inverse label map to convert model labels (0-7) back to original labels (1-8)
+inverse_label_map = {new_label: old_label for old_label, new_label in label_map.items()}
+
+# Map predictions back to original label range (1-8)
+test_pred_labels_mapped = [inverse_label_map[label] for label in test_pred_labels]
+
 # Save test predictions to a CSV
-test_df["predicted_label"] = test_pred_labels
+test_df["predicted_label"] = test_pred_labels_mapped
 test_df.to_csv("input_data/TestData_with_predictions.csv", index=False)
 print("Test predictions saved to TestData_with_predictions.csv")
