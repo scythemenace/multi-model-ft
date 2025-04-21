@@ -1,14 +1,12 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/-JsZFTN4)
+# Text Classification Tasks
 
-# Homework 5: Text Classification Tasks
-
-This repository contains the implementation of three text classification tasks for Homework 5, using DistilBERT models for classification. The tasks are:
+This repository contains the implementation of three text classification tasks for different datasets, using DistilBERT models for classification. The tasks are:
 
 - **News Article Classification**: Classifies news articles into 8 categories.
 - **Political Bias Tweet Classification**: Classifies tweets into 5 political bias categories.
 - **Phishing Email Classification**: Classifies emails as spam (0) or non-spam (1).
 
-The report for all tasks is included as `homework5_report.pdf`.
+The report for all tasks is included as `report.pdf`.
 
 ## Directory Structure
 
@@ -27,7 +25,7 @@ The report for all tasks is included as `homework5_report.pdf`.
   - `answer.txt`: Test predictions for Codabench submission.
   - `answer.txt.zip`: Zipped submission file for Codabench.
   - `model_distilbert_email.py`: Script to train and evaluate the DistilBERT model.
-- `homework5_report.pdf`: Report detailing the approaches and results for all tasks.
+- `report.pdf`: Report detailing the approaches and results for all tasks.
 - `requirements.txt`: List of required Python packages.
 
 ## Setup Instructions
